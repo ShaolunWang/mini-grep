@@ -14,6 +14,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	)
 	target_link_libraries(test_mini-grep
 			GTest::gtest_main
+			fmt::fmt
 	)
 	include(GoogleTest)
 	gtest_discover_tests(test_mini-grep)

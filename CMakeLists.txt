@@ -42,14 +42,14 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     message(STATUS "Doxygen not found, not building docs")
   endif()
 endif()
-
 ################## fetch content #########################
 
 include(FetchContent)
 FetchContent_Declare(
   fmtlib
   GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-  GIT_TAG 12.0.0)
+  GIT_TAG 12.1.0)
 FetchContent_MakeAvailable(fmtlib)
 
+include_directories(${PROJECT_SOURCE_DIR}/include)
 add_subdirectory(test)
