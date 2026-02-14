@@ -15,6 +15,10 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	add_compile_options(-fsanitize=address -g)
 	add_link_options(-fsanitize=address)
 endif()
+if(CMAKE_BUILD_TYPE MATCHES THREAD)
+	add_compile_options(-fsanitize=thread -g)
+	add_link_options(-fsanitize=thread)
+endif()
 
 
 # Only do these if this is the main project, and not if it is included through add_subdirectory
