@@ -1,4 +1,4 @@
-#include "mpmc/queue.h"
+#include "queue/queue.h"
 #include "gtest/gtest.h"
 #include <mutex>
 #include <thread>

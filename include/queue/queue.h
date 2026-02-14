@@ -24,6 +24,12 @@ private:
   std::condition_variable cv;
 };
 
+/**
+ *
+ *  1 -> 2 (tail)-> 3 -> 4 -> 5(head)
+ *
+ **/
+
 template <typename T> bool Queue<T>::try_push(const T &v) {}
 
 template <typename T> void Queue<T>::push(const T &v) {
@@ -44,6 +50,9 @@ template <typename T> void Queue<T>::push(const T &v) {
   cv.wait(lock, [&] { return !s.full; });
   s.value = v;
   s.full = true;
+
+  // NOTE: both head and tail are never decrementing
+  //       so that it will always wrap correctly
   m_head++;
   lock.unlock();
   cv.notify_all();
@@ -51,11 +60,13 @@ template <typename T> void Queue<T>::push(const T &v) {
 
 template <typename T> T Queue<T>::pop() {
   std::unique_lock<std::mutex> lock(m_mtx);
-  cv.wait(lock, [&] { return m_head > m_tail; }); // queue not empty
+  cv.wait(lock, [&] { return m_head > m_tail; });
   auto &s = m_slots[m_tail % m_slots.size()];
 
   Slot v = std::move(s);
   s.full = false;
+  // NOTE: both head and tail are never decrementing
+  //       so that it will always wrap correctly
   m_tail++;
   lock.unlock();
   cv.notify_all();

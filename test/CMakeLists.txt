@@ -1,5 +1,6 @@
 ################## add test lib #########################
-if(CMAKE_BUILD_TYPE MATCHES Debug)
+if(CMAKE_BUILD_TYPE MATCHES Debug OR 
+	CMAKE_BUILD_TYPE MATCHES THREAD)
 	FetchContent_Declare(
 			googletest
 			URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip

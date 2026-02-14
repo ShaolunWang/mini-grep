@@ -8,6 +8,8 @@ release:
 	cmake -B build_release -D CMAKE_BUILD_TYPE=Release -G Ninja
 release_build:
 	cmake --build build_release
+thread:
+	cmake -B build -D CMAKE_BUILD_TYPE=THREAD -G Ninja
 clean:
 	rm -rf build/ build_release
 
