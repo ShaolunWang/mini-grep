@@ -1,35 +1,10 @@
 #pragma once
-#include <string>
-#include <vector>
+
+#include "policies.h"
+#include <cstddef>
 
 static constexpr std::size_t CHUNK_SIZE = 1 << 20; // 1 MB
                                                    //
-struct FileMetadata {
-  std::string path;
-  std::vector<char> buffer; // entire file contents
-};
-
-struct Job {
-  const FileMetadata *file;
-  std::size_t offset;
-  std::size_t length; // length of the chunk in bytes
-};
-
-struct Chunk {
-  const FileMetadata *file;
-  std::uint16_t offset;
-  std::uint16_t length;
-};
-
-/**
- * @brief Defining executor strategy
- * @tparam Executor
- */
-template <typename Executor>
-concept ExecutorPolicy = requires(Executor policy, Job job) {
-  { policy.submit(job) } -> std::same_as<void>;
-  // { policy.finish() } -> std::same_as<void>;
-};
 
 /**
  * @brief split files

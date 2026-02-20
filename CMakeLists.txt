@@ -70,8 +70,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(fmtlib absl re2)
 
-# target_include_directories (re2 INTERFACE $<BUILD_INTERFACE:${re2lib_SOURCE_DIR}>)
-# target_link_libraries(re2 PUBLIC absl::base absl::strings absl::synchronization absl::container)
+# thanks re2 and abseil :)
 target_link_libraries(re2
     PUBLIC
     absl::base
