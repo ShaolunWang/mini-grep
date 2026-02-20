@@ -10,14 +10,15 @@ if(CMAKE_BUILD_TYPE MATCHES Debug OR
 	FetchContent_MakeAvailable(googletest)
 
 	enable_testing()
-	add_executable(test_mini-grep
-			test_mini-grep.cpp
+	add_executable(test_search
+			test_search.cpp
 	)
-	target_link_libraries(test_mini-grep
+	target_link_libraries(test_search
 			GTest::gtest_main
 			fmt::fmt
+			search_lib
 	)
 	include(GoogleTest)
-	gtest_discover_tests(test_mini-grep)
+	gtest_discover_tests(test_search)
 endif()
 ##########################################################

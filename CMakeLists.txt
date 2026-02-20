@@ -7,8 +7,9 @@ project(
   LANGUAGES CXX)
 
 
-Set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -47,13 +48,42 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   endif()
 endif()
 ################## fetch content #########################
-
+set(ABSL_ENABLE_INSTALL ON)
 include(FetchContent)
 FetchContent_Declare(
   fmtlib
   GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-  GIT_TAG 12.1.0)
-FetchContent_MakeAvailable(fmtlib)
+  GIT_TAG 12.1.0
+  GIT_SHALLOW TRUE
+)
+FetchContent_Declare(
+    absl
+    GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
+    GIT_TAG master  # You can specify a specific tag or commit here
+)
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
+FetchContent_Declare(
+    re2
+    GIT_REPOSITORY https://github.com/google/re2.git
+    GIT_TAG "2025-11-05" 
+)
+
+FetchContent_MakeAvailable(fmtlib absl re2)
+
+# target_include_directories (re2 INTERFACE $<BUILD_INTERFACE:${re2lib_SOURCE_DIR}>)
+# target_link_libraries(re2 PUBLIC absl::base absl::strings absl::synchronization absl::container)
+target_link_libraries(re2
+    PUBLIC
+    absl::base
+    absl::strings
+    absl::synchronization
+    absl::flat_hash_map
+    absl::flat_hash_set
+    absl::hash
+    absl::inlined_vector
+    absl::optional
+    absl::span
+    absl::str_format
+)
+add_subdirectory(src)
 add_subdirectory(test)
