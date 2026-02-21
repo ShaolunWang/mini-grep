@@ -7,7 +7,7 @@
 TEST(SequentialPolicyTest, SimpleCount) {
   Re2Matcher matcher("abc"); // however you construct it
   SequentialPolicy policy(matcher);
-  constexpr std::string text = "abc abc abc";
+  constexpr std::string_view text = "abc abc abc";
   auto buffer = std::make_unique<char[]>(text.size());
   std::memcpy(buffer.get(), text.data(), text.size());
 
