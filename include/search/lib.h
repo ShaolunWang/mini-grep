@@ -19,6 +19,6 @@ void split_files(const FileMetadata *file, ExecutorPolicy &executor) {
   for (std::size_t offset = 0; offset < size; offset += CHUNK_SIZE) {
     // could be smaller than a chunk size
     std::size_t len = std::min(CHUNK_SIZE, size - offset);
-    executor.submit(Job{file, offset, len});
+    executor.submit(Job{.file = file, .offset = offset, .length = len});
   }
 }
