@@ -2,6 +2,7 @@
 #include "queue/queue.h"
 #include "search/policies.h"
 #include "gtest/gtest.h"
+#include <cstring>
 
 TEST(SequentialPolicyTest, SimpleCount) {
   Re2Matcher matcher("abc"); // however you construct it
