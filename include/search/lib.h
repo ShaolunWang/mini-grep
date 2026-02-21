@@ -1,7 +1,10 @@
 #pragma once
 
+#include "fmt/base.h"
 #include "policies.h"
 #include <cstddef>
+#include <unistd.h>
+#include <vector>
 
 static constexpr std::size_t CHUNK_SIZE = 1 << 20; // 1 MB
                                                    //
@@ -13,12 +16,18 @@ static constexpr std::size_t CHUNK_SIZE = 1 << 20; // 1 MB
  * @param file path with buffer
  * @param executor Executor type
  */
-template <typename ExecutorPolicy>
-void split_files(const FileMetadata *file, ExecutorPolicy &executor) {
-  std::size_t size = file->buffer.size();
-  for (std::size_t offset = 0; offset < size; offset += CHUNK_SIZE) {
-    // could be smaller than a chunk size
-    std::size_t len = std::min(CHUNK_SIZE, size - offset);
-    executor.submit(Job{.file = file, .offset = offset, .length = len});
+template <typename ExecutorPolicy> void read_io(ExecutorPolicy &executor) {
+
+  std::vector<char> buffer(CHUNK_SIZE);
+  while (true) {
+    auto buffer = std::make_unique<char[]>(CHUNK_SIZE);
+    ssize_t n = ::read(STDIN_FILENO, buffer.get(), CHUNK_SIZE);
+
+    if (n <= 0) {
+      fmt::report_error("uh, whar");
+    }
+    executor.submit(
+        Job{.buffer = std::move(buffer), .size = static_cast<std::size_t>(n)});
   }
+
 }

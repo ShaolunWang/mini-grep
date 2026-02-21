@@ -1,20 +1,19 @@
 #pragma once
 #include "matcher.h"
 #include <atomic>
-#include <string>
-#include <thread>
 #include <utility>
 #include <vector>
 
-struct FileMetadata {
-  std::string path;
-  std::vector<char> buffer; // chunk
-};
 struct Job {
-  const FileMetadata *file;
-  std::size_t offset;
-  std::size_t length; // length of the chunk in bytes
-  const std::string match;
+public:
+  Job(const Job &) = delete;
+  Job &operator=(const Job &) = delete;
+  Job(Job &&job) noexcept : buffer{std::move(job.buffer)}, size{job.size} {};
+  Job &operator=(Job &&) noexcept = default;
+  Job(std::unique_ptr<char[]> buffer, std::size_t size) noexcept
+      : buffer(std::move(buffer)), size{size} {}
+  std::unique_ptr<char[]> buffer;
+  std::size_t size;
 };
 
 /**
@@ -38,34 +37,26 @@ private:
 
 public:
   template <typename Job> void process_chunks(const std::vector<Job> &&jobs) {
-    static_cast<Derived &>(*this)->process_chunk_impl(
-        std::forward<std::vector<Job>>(jobs));
+    static_cast<Derived &>(*this)->submit(std::forward<std::vector<Job>>(jobs));
   }
   friend Derived;
 };
 
 struct SequentialPolicy : public ExecutorPolicyBased<SequentialPolicy> {
 public:
-  explicit SequentialPolicy(Re2Matcher &m_matcher) : m_matcher(m_matcher) {}
-  template <typename Job>
-  void process_chunk_impl(const std::vector<Job> &jobs) {
-    for (const auto &job : jobs) {
-      std::size_t local_count = 0;
-      const char *data = job.file->data();
-      std::size_t begin = job.offset;
-      std::size_t end = job.offset + job.length;
-      std::string_view chunk(data + begin, end - begin);
-      m_total += m_matcher.match(chunk);
-    }
+  explicit SequentialPolicy(Re2Matcher &m_matcher) : m_matcher{m_matcher} {}
+  void submit(Job job) {
+    std::string_view chunk(job.buffer.get(), job.size);
+    m_total += m_matcher.match(chunk);
   }
-  std::size_t total() const { return m_total; }
+  void finish() {}
+  std::size_t wait() const { return m_total; }
 
 private:
   Re2Matcher &m_matcher;
   std::size_t m_total{0};
 };
 
-// TODO(me):  impl
 struct LockedPolicy : public ExecutorPolicyBased<LockedPolicy> {
 public:
   explicit LockedPolicy(Re2Matcher &m_matcher) : m_matcher(m_matcher) {}

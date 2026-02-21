@@ -1,6 +1,6 @@
 file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${Search_SOURCE_DIR}/include/search/*.h" "${Search_SOURCE_DIR}/include/queue/*.h")
 
-add_library(search_lib lib.cpp ${HEADER_LIST})
+add_library(search_lib matcher.cpp ${HEADER_LIST})
 
 target_include_directories(search_lib PUBLIC ../include)
 
