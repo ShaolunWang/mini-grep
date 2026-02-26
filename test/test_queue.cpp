@@ -4,7 +4,7 @@
 #include <thread>
 
 TEST(QueueTest, SingleThreadPushPop) {
-  Queue<int> q(4);
+  LockedQueue<int> q(4);
 
   q.push(10);
   q.push(20);
@@ -21,7 +21,7 @@ TEST(QueueTest, MultiThreadPushPop) {
   const size_t capacity = 10;
   const size_t num_items = 1000;
 
-  Queue<int> q(capacity);
+  LockedQueue<int> q(capacity);
 
   std::vector<int> results;
   std::mutex res_mutex;
@@ -56,22 +56,22 @@ TEST(QueueTest, MultiProducerMultiConsumer) {
   const int num_producers = 4;
   const int num_consumers = 4;
 
-  Queue<int> q(capacity);
+  LockedQueue<int> q(capacity);
   std::vector<int> results;
   std::mutex res_mutex;
 
-  // spawn a bunch of producers
   std::vector<std::thread> producers;
+  producers.reserve(num_producers);
   for (int p = 0; p < num_producers; ++p) {
     producers.emplace_back([&, p]() {
       for (int i = 0; i < items_per_producer; ++i) {
-        q.push(p * items_per_producer + i); // blocking push
+        q.push((p * items_per_producer) + i); // blocking push
       }
     });
   }
 
-  // spawn a bunch of consumers
   std::vector<std::thread> consumers;
+  consumers.reserve(num_consumers);
   for (int c = 0; c < num_consumers; ++c) {
     consumers.emplace_back([&]() {
       for (int i = 0; i < (num_producers * items_per_producer) / num_consumers;
@@ -83,7 +83,6 @@ TEST(QueueTest, MultiProducerMultiConsumer) {
     });
   }
 
-  // cleanup join
   for (auto &t : producers) {
     t.join();
   }
@@ -91,14 +90,13 @@ TEST(QueueTest, MultiProducerMultiConsumer) {
     t.join();
   }
 
-  // Verify the total number of items / unique items
   EXPECT_EQ(results.size(), num_producers * items_per_producer);
   std::set<int> unique_items(results.begin(), results.end());
   EXPECT_EQ(unique_items.size(), num_producers * items_per_producer);
 }
 
-TEST(Queue, SingleThread_PushPop_Order) {
-  Queue<int> q(4);
+TEST(Queue, SingleThreadPushPopOrder) {
+  LockedQueue<int> q(4);
 
   q.push(10);
   q.push(20);
@@ -109,8 +107,8 @@ TEST(Queue, SingleThread_PushPop_Order) {
   EXPECT_EQ(q.pop(), 30);
 }
 
-TEST(Queue, WrapAround_Correctness) {
-  Queue<int> q(2);
+TEST(Queue, WrapAroundCorrectness) {
+  LockedQueue<int> q(2);
 
   q.push(1);
   q.push(2);

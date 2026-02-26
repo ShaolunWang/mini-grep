@@ -13,11 +13,11 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
-	add_compile_options(-fsanitize=address -g)
+	add_compile_options(-fsanitize=address,undefined -g)
 	add_link_options(-fsanitize=address)
 endif()
 if(CMAKE_BUILD_TYPE MATCHES THREAD)
-	add_compile_options(-fsanitize=thread -g)
+	add_compile_options(-fsanitize=thread,undefined -g)
 	add_link_options(-fsanitize=thread)
 endif()
 

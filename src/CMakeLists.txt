@@ -1,4 +1,8 @@
-file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${Search_SOURCE_DIR}/include/search/*.h" "${Search_SOURCE_DIR}/include/queue/*.h")
+file(GLOB HEADER_LIST CONFIGURE_DEPENDS 
+	"${Search_SOURCE_DIR}/include/search/*.h"
+	"${Search_SOURCE_DIR}/include/queue/*.h"
+	"${Search_SOURCE_DIR}/include/ringbuffer/*.h"
+)
 
 add_library(search_lib matcher.cpp ${HEADER_LIST})
 
