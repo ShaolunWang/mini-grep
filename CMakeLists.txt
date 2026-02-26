@@ -59,7 +59,7 @@ FetchContent_Declare(
 FetchContent_Declare(
     absl
     GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
-    GIT_TAG master  # You can specify a specific tag or commit here
+    GIT_TAG "20260107.1"  # You can specify a specific tag or commit here
 )
 
 FetchContent_Declare(
