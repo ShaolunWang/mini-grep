@@ -17,7 +17,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	add_link_options(-fsanitize=address)
 endif()
 if(CMAKE_BUILD_TYPE MATCHES THREAD)
-	add_compile_options(-fsanitize=thread,undefined -g)
+	add_compile_options(-fsanitize=thread -g)
 	add_link_options(-fsanitize=thread)
 endif()
 
