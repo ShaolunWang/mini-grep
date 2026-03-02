@@ -23,7 +23,7 @@ public:
 template <typename Executor>
 concept ExecutorPolicy = requires(Executor policy, Job job) {
   { policy.submit(job) } -> std::same_as<void>;
-  // TODO(me): { policy.finish() } -> std::same_as<void>;
+  { policy.finish() } -> std::same_as<void>;
 };
 
 /**
@@ -36,8 +36,9 @@ private:
   ExecutorPolicyBased() = default;
 
 public:
-  template <typename Job> void process_chunks(const std::vector<Job> &&jobs) {
-    static_cast<Derived &>(*this)->submit(std::forward<std::vector<Job>>(jobs));
+  template <typename Job>
+  void process_chunks(this auto &self, const std::vector<Job> &&jobs) {
+    self->submit(std::forward<std::vector<Job>>(jobs));
   }
   friend Derived;
 };
@@ -60,6 +61,15 @@ private:
 struct LockedPolicy : public ExecutorPolicyBased<LockedPolicy> {
 public:
   explicit LockedPolicy(Re2Matcher &m_matcher) : m_matcher(m_matcher) {}
+
+private:
+  Re2Matcher &m_matcher;
+  std::atomic<size_t> m_total{0};
+};
+
+struct LockFreeSPSCPolicy : public ExecutorPolicyBased<LockFreeSPSCPolicy> {
+public:
+  explicit LockFreeSPSCPolicy(Re2Matcher &matcher) : m_matcher(matcher) {};
 
 private:
   Re2Matcher &m_matcher;

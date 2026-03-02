@@ -1,4 +1,3 @@
-#pragma once
 #include "queue/queue.h"
 #include "search/policies.h"
 #include "gtest/gtest.h"

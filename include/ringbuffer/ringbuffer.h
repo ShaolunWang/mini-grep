@@ -1,7 +1,9 @@
+#pragma once
 #include <atomic>
 #include <cstddef>
 #include <cstdlib>
 #include <memory>
+#include <new>
 template <typename T> class LockfreeSPSCRingBuffer {
 public:
   explicit LockfreeSPSCRingBuffer(size_t capacity) : m_capacity{capacity} {
@@ -16,7 +18,7 @@ public:
         m_head.load(std::memory_order_acquire)) {
       return false;
     }
-    auto *ptr = reinterpret_cast<T *>(&m_container[currentTail].storage);
+    auto *ptr = std::bit_cast<T *>(&m_container[currentTail].storage);
     std::construct_at(ptr, v);
     m_tail.store((currentTail + 1) % m_capacity, std::memory_order_release);
     return true;
@@ -27,7 +29,7 @@ public:
     if (currentHead == m_tail.load(std::memory_order_acquire)) {
       return false;
     };
-    auto *ptr = reinterpret_cast<T *>(&m_container[currentHead].storage);
+    auto *ptr = std::bit_cast<T *>(&m_container[currentHead].storage);
     out = std::move(*ptr);
     std::destroy_at(ptr);
     m_head.store((currentHead + 1) % m_capacity, std::memory_order_release);
