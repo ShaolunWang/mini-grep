@@ -37,7 +37,7 @@ private:
 
 public:
   template <typename Job>
-  void process_chunks(this auto &self, const std::vector<Job> &&jobs) {
+  void process_chunks(this Job &self, const std::vector<Job> &&jobs) {
     self->submit(std::forward<std::vector<Job>>(jobs));
   }
   friend Derived;
