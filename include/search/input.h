@@ -1,22 +1,30 @@
+#pragma once
+#include <cstddef>
 #include <string>
-class InputConfig {
-private:
-  static std::string pattern;
-  // bitwise length initialization
-  const std::size_t chunk_size{pattern.length()};
 
+class InputConfig {
 public:
-  // singleton class
   InputConfig(const InputConfig &) = delete;
   InputConfig(InputConfig &&) = delete;
   InputConfig &operator=(const InputConfig &) = delete;
   InputConfig &operator=(InputConfig &&) = delete;
-  explicit InputConfig(const std::string &pattern) {
-    InputConfig::pattern = pattern;
+
+  static void init(const std::string &pattern) {
+    m_pattern = pattern;
+    m_initialized = true;
   }
+
   static InputConfig *getInputConfig() {
-    static InputConfig config(pattern);
+    static InputConfig config;
     return &config;
   }
-  size_t getChunkSize() const { return chunk_size; }
+
+  static size_t getChunkSize() { return m_pattern.length(); }
+  static const std::string &getPattern() { return m_pattern; }
+
+private:
+  InputConfig() = default;
+  inline static std::string m_pattern;
+  inline static bool m_initialized{false};
 };
+;

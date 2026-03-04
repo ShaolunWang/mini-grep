@@ -1,4 +1,3 @@
-#include <atomic>
 #include <condition_variable>
 #include <cstddef>
 #include <mutex>
@@ -7,7 +6,7 @@ template <typename T> class LockedQueue {
 public:
   explicit LockedQueue(size_t capacity) { m_slots.resize(capacity); }
 
-  void push(const T &v);
+  void emplace(const T &v);
   T pop();
 
 private:
@@ -28,7 +27,7 @@ private:
  *
  **/
 
-template <typename T> void LockedQueue<T>::push(const T &v) {
+template <typename T> void LockedQueue<T>::emplace(const T &v) {
   std::unique_lock<std::mutex> lock{m_mtx};
   cv.wait(lock, [&] { return m_head - m_tail < m_slots.size(); });
   auto &s = m_slots[m_head % m_slots.size()];

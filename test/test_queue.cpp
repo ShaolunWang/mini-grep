@@ -6,8 +6,8 @@
 TEST(QueueTest, SingleThreadPushPop) {
   LockedQueue<int> q(4);
 
-  q.push(10);
-  q.push(20);
+  q.emplace(10);
+  q.emplace(20);
 
   int value;
   value = q.pop();
@@ -28,7 +28,7 @@ TEST(QueueTest, MultiThreadPushPop) {
 
   std::thread producer([&]() {
     for (int i = 0; i < num_items; ++i) {
-      q.push(i);
+      q.emplace(i);
     }
   });
 
@@ -37,7 +37,7 @@ TEST(QueueTest, MultiThreadPushPop) {
     for (int i = 0; i < num_items; ++i) {
       int v = q.pop(); // blocking pop
       std::scoped_lock<std::mutex> lk(res_mutex);
-      results.push_back(v);
+      results.emplace_back(v);
     }
   });
 
@@ -65,7 +65,7 @@ TEST(QueueTest, MultiProducerMultiConsumer) {
   for (int p = 0; p < num_producers; ++p) {
     producers.emplace_back([&, p]() {
       for (int i = 0; i < items_per_producer; ++i) {
-        q.push((p * items_per_producer) + i); // blocking push
+        q.emplace((p * items_per_producer) + i); // blocking emplace
       }
     });
   }
@@ -78,7 +78,7 @@ TEST(QueueTest, MultiProducerMultiConsumer) {
            i++) {
         int value = q.pop(); // blocking pop
         std::scoped_lock<std::mutex> lk(res_mutex);
-        results.push_back(value);
+        results.emplace_back(value);
       }
     });
   }
@@ -98,9 +98,9 @@ TEST(QueueTest, MultiProducerMultiConsumer) {
 TEST(Queue, SingleThreadPushPopOrder) {
   LockedQueue<int> q(4);
 
-  q.push(10);
-  q.push(20);
-  q.push(30);
+  q.emplace(10);
+  q.emplace(20);
+  q.emplace(30);
 
   EXPECT_EQ(q.pop(), 10);
   EXPECT_EQ(q.pop(), 20);
@@ -110,12 +110,12 @@ TEST(Queue, SingleThreadPushPopOrder) {
 TEST(Queue, WrapAroundCorrectness) {
   LockedQueue<int> q(2);
 
-  q.push(1);
-  q.push(2);
+  q.emplace(1);
+  q.emplace(2);
 
   EXPECT_EQ(q.pop(), 1);
 
-  q.push(3); // forces wrap
+  q.emplace(3); // forces wrap
 
   EXPECT_EQ(q.pop(), 2);
   EXPECT_EQ(q.pop(), 3);

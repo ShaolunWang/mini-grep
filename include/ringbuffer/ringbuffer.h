@@ -4,13 +4,27 @@
 #include <cstdlib>
 #include <memory>
 #include <new>
+#include <optional>
 template <typename T> class LockfreeSPSCRingBuffer {
 public:
   explicit LockfreeSPSCRingBuffer(size_t capacity) : m_capacity{capacity} {
     m_container = static_cast<Element *>(malloc(capacity * sizeof(Element)));
   }
-  bool push(const T &v) {
-    // when we push it, we wanna check whether tail is catching up with the head
+  // no more cast littering
+  bool push(const T &v)
+    requires std::copyable<T>
+  {
+    const size_t currentTail = m_tail.load(std::memory_order_relaxed);
+    if ((currentTail + 1) % m_capacity ==
+        m_head.load(std::memory_order_acquire))
+      return false;
+    new (&m_container[currentTail].storage) T(v);
+    m_tail.store((currentTail + 1) % m_capacity, std::memory_order_release);
+    return true;
+  }
+  bool emplace(T &&v) {
+    // when we emplace it, we wanna check whether tail is catching up with the
+    // head
     const std::size_t currentTail = m_tail.load(std::memory_order_relaxed);
 
     // full
@@ -19,27 +33,30 @@ public:
       return false;
     }
     auto *ptr = std::bit_cast<T *>(&m_container[currentTail].storage);
-    std::construct_at(ptr, v);
+    new (&m_container[currentTail].storage) T(std::move(v));
     m_tail.store((currentTail + 1) % m_capacity, std::memory_order_release);
     return true;
   };
 
-  bool pop(T &out) {
+  std::optional<T> pop() {
     const size_t currentHead = m_head.load(std::memory_order_relaxed);
     if (currentHead == m_tail.load(std::memory_order_acquire)) {
-      return false;
+      return std::nullopt;
     };
     auto *ptr = std::bit_cast<T *>(&m_container[currentHead].storage);
-    out = std::move(*ptr);
+    std::optional<T> out = std::move(*ptr);
     std::destroy_at(ptr);
     m_head.store((currentHead + 1) % m_capacity, std::memory_order_release);
-    return true;
+    return out;
   };
   ~LockfreeSPSCRingBuffer() {
-    T tmp;
-    while (pop(tmp)) {
+    while (pop()) {
     }
     std::free(m_container);
+  }
+  bool empty() const {
+    return m_head.load(std::memory_order_acquire) ==
+           m_tail.load(std::memory_order_acquire);
   }
 
   LockfreeSPSCRingBuffer(const LockfreeSPSCRingBuffer &) = delete;
