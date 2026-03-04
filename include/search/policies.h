@@ -3,6 +3,7 @@
 #include "ringbuffer/ringbuffer.h"
 #include "search/input.h"
 #include <atomic>
+#include <cstring>
 #include <stdatomic.h>
 #include <thread>
 #include <utility>
