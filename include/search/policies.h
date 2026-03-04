@@ -51,9 +51,16 @@ private:
   ExecutorPolicyBased() = default;
 
 public:
-  template <typename Job>
-  void process_chunks(this Job &self, const std::vector<Job> &&jobs) {
-    self->submit(std::forward<std::vector<Job>>(jobs));
+  // template <typename Job>
+  // void process_chunks(this Job &self, const std::vector<Job> &&jobs) {
+  //   self->submit(std::forward<std::vector<Job>>(jobs));
+  // }
+
+  // NOTE: Thank you github ci for not supporting deducing this
+  // I don't plan to get gcc14 on ci because why bother :)
+
+  template <typename Job> void process_chunks(const std::vector<Job> &&jobs) {
+    static_cast<Derived &>(*this)->submit(std::forward<std::vector<Job>>(jobs));
   }
   friend Derived;
 };
