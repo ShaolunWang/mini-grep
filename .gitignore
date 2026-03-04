@@ -46,6 +46,6 @@ CTestTestfile.cmake
 _deps
 CMakeUserPresets.json
 
-build/
+build*/
 .cache/
 compile_commands.json

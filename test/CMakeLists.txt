@@ -10,14 +10,38 @@ if(CMAKE_BUILD_TYPE MATCHES Debug OR
 	FetchContent_MakeAvailable(googletest)
 
 	enable_testing()
-	add_executable(test_mini-grep
-			test_mini-grep.cpp
+	add_executable(test_queue
+			test_queue.cpp
 	)
-	target_link_libraries(test_mini-grep
+	target_link_libraries(test_queue
 			GTest::gtest_main
 			fmt::fmt
+			search_lib
+			re2
 	)
+	add_executable(test_policies
+			test_policies.cpp
+	)
+	target_link_libraries(test_policies
+			GTest::gtest_main
+			fmt::fmt
+			re2
+			search_lib
+	)
+	add_executable(test_ringbuffer
+			test_ringbuffer.cpp
+	)
+	target_link_libraries(test_ringbuffer
+			GTest::gtest_main
+			fmt::fmt
+			re2
+			search_lib
+	)
+
+
 	include(GoogleTest)
-	gtest_discover_tests(test_mini-grep)
+	gtest_discover_tests(test_queue)
+	gtest_discover_tests(test_policies)
+	gtest_discover_tests(test_ringbuffer)
 endif()
 ##########################################################
