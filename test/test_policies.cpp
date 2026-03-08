@@ -1,5 +1,4 @@
 #include "search/input.h"
-#include "search/lib.h"
 #include "search/policies.h"
 #include "gtest/gtest.h"
 #include <cstring>

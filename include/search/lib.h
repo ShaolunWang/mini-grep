@@ -7,14 +7,16 @@
 
 template <ExecutorPolicy Policy> class Engine {
 public:
-  explicit Engine(Policy policy) : m_policy{policy} {}
+  explicit Engine(std::unique_ptr<Policy> policy)
+      : m_policy{std::move(policy)} {}
   size_t run() {
-    std::jthread producer([this] { read_io(); });
-    return m_policy.wait();
+    std::jthread producer([this] { this->read_io(); });
+    producer.join();
+    return m_policy->wait();
   };
 
 private:
   void read_io();
 
-  Policy m_policy;
+  std::unique_ptr<Policy> m_policy;
 };
