@@ -35,8 +35,8 @@ public:
  * @tparam Executor
  */
 template <typename Executor>
-concept ExecutorPolicy = requires(Executor policy, Job job) {
-  { policy.submit(job) } -> std::same_as<void>;
+concept ExecutorPolicy = requires(Executor policy, Job &&job) {
+  { policy.submit(std::move(job)) } -> std::same_as<void>;
   { policy.finish() } -> std::same_as<void>;
   { policy.wait() } -> std::same_as<size_t>;
 };
@@ -59,16 +59,18 @@ public:
   // NOTE: Thank you github ci for not supporting deducing this
   // I don't plan to get gcc14 on ci because why bother :)
 
-  template <typename Job> void process_chunks(const std::vector<Job> &&jobs) {
-    static_cast<Derived &>(*this)->submit(std::forward<std::vector<Job>>(jobs));
+  template <typename Job> void submit(Job &&job) {
+    static_cast<Derived &>(*this)->submit(std::forward<Job>(job));
   }
+  void finish() { static_cast<Derived &>(*this)->finish(); }
+  std::size_t wait() { static_cast<Derived &>(*this)->wait(); }
   friend Derived;
 };
 
 struct SequentialPolicy : public ExecutorPolicyBased<SequentialPolicy> {
 public:
   explicit SequentialPolicy(Re2Matcher &m_matcher) : m_matcher{m_matcher} {}
-  void submit(Job job) {
+  void submit(Job &&job) {
     std::string_view chunk(job.buffer.get(), job.size);
     m_total += m_matcher.match(chunk);
   }
@@ -83,8 +85,9 @@ private:
 struct LockedPolicy : public ExecutorPolicyBased<LockedPolicy> {
 public:
   explicit LockedPolicy(Re2Matcher &m_matcher) : m_matcher(m_matcher) {}
+  void submit(Job &&job) {};
   void finish() {};
-  std::size_t wait() { return m_total.load(memory_order_relaxed); }
+  std::size_t wait() { return m_total.load(std::memory_order_relaxed); }
 
 private:
   Re2Matcher &m_matcher;
@@ -99,7 +102,7 @@ public:
     m_consumer =
         std::jthread([this](const std::stop_token &stop) { consume(stop); });
   };
-  void submit(Job job) {
+  void submit(Job &&job) {
     while (job.buffer != nullptr && job.size != 0 &&
            !m_queue.emplace(std::move(job))) {
       std::this_thread::yield();
@@ -111,7 +114,13 @@ public:
     return m_total.load(std::memory_order_relaxed);
   };
   void finish() {};
-  ~LockFreeSPSCPolicy() { m_done.store(true, std::memory_order_release); }
+  ~LockFreeSPSCPolicy() = default;
+
+  LockFreeSPSCPolicy(const LockFreeSPSCPolicy &) = delete;
+  LockFreeSPSCPolicy &operator=(const LockFreeSPSCPolicy &) = delete;
+
+  LockFreeSPSCPolicy(LockFreeSPSCPolicy &&) = delete;
+  LockFreeSPSCPolicy &operator=(LockFreeSPSCPolicy &&) = delete;
 
 private:
   void consume(const std::stop_token &stop) {
@@ -127,10 +136,10 @@ private:
         std::this_thread::yield();
       }
     }
+
   };
   Re2Matcher &m_matcher;
   std::atomic<size_t> m_total{0};
   std::jthread m_consumer;
-  std::atomic<bool> m_done{false};
-  LockfreeSPSCRingBuffer<Job> m_queue; // your lock-free SPSC ring buffer
+  LockfreeSPSCRingBuffer<Job> m_queue;
 };

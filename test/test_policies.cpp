@@ -1,9 +1,8 @@
 #include "search/input.h"
+#include "search/lib.h"
 #include "search/policies.h"
 #include "gtest/gtest.h"
 #include <cstring>
-
-// --- SequentialPolicy ---
 
 TEST(SequentialPolicyTest, NoMatches) {
   Re2Matcher matcher("xyz");
@@ -47,13 +46,10 @@ TEST(SequentialPolicyTest, SimpleCount) {
   EXPECT_EQ(policy.wait(), 3);
 }
 
-// --- LockFreeSPSCPolicy ---
 namespace {
 class LockFreeSPSCPolicyTest : public ::testing::Test {
 protected:
-  void SetUp() override {
-    InputConfig::init("abc"); // must be called before policy construction
-  }
+  void SetUp() override { InputConfig::init("abc"); }
 };
 
 TEST_F(LockFreeSPSCPolicyTest, NoMatches) {
@@ -93,5 +89,21 @@ TEST_F(LockFreeSPSCPolicyTest, ManyJobs) {
   for (int i = 0; i < N; i++)
     policy.submit(Job::make_job("abc"));
   EXPECT_EQ(policy.wait(), N);
+}
+
+TEST_F(LockFreeSPSCPolicyTest, LargeInputStress) {
+  Re2Matcher matcher("abc");
+  LockFreeSPSCPolicy policy(matcher);
+
+  constexpr int total_chunks = 5;
+  for (int i = 0; i < total_chunks; i++) {
+    std::string chunk(InputConfig::getChunkSize(), 'x');
+    if (i % 2 == 0) {
+      chunk.replace(54321, 3, "abc");
+    }
+    policy.submit(Job::make_job(chunk));
+  }
+
+  EXPECT_EQ(policy.wait(), 3);
 }
 } // namespace

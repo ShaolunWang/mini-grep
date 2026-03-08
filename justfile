@@ -16,3 +16,6 @@ conf_thread:
 	cmake -B build_thread -D CMAKE_BUILD_TYPE=THREAD -G Ninja
 clean:
 	rm -rf build_debug/ build_thread build_release
+
+base:
+	cmake -B build -D CMAKE_BUILD_TYPE=Debug -G Ninja && cmake --build build/
