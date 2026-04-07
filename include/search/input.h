@@ -18,20 +18,15 @@ public:
     static InputConfig config;
     return &config;
   }
-#ifndef Debug
-  static constexpr size_t getChunkSize() { return 256 * 1024; }
-#else
   static size_t getChunkSize() { return m_chunkSize; }
-  static void setChunkSize(const size_t t) {m_chunkSize = t;}
-  static void resetChunkSize(){m_chunkSize = 256 * 1024;}
-#endif
+
+  static void setChunkSize(size_t t) { m_chunkSize = t; }
+  static void resetChunkSize() { m_chunkSize = 256 * 1024; }
   static const std::string &getPattern() { return m_pattern; }
 
 private:
   InputConfig() = default;
-#ifdef Debug
-  inline static size_t m_chunkSize = 256 * 1024;
-#endif
+  static inline size_t m_chunkSize = 256 * 1024;
   inline static std::string m_pattern;
   inline static bool m_initialized{false};
 };

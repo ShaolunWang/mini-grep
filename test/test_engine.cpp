@@ -1,21 +1,39 @@
 #include "search/lib.h"
 #include "search/policies.h"
 #include "gtest/gtest.h"
+#include <cstdio>
+#include <fstream>
+
+static std::string writeTempFile(const std::string &content) {
+
+  srand(time(nullptr));
+  auto stamp = rand() % 1357;
+  std::string tmp_name = "/tmp/engine_test_" + std::to_string(stamp);
+  int fd = mkstemp(tmp_name.data());
+  if (fd < 0)
+    throw std::runtime_error("Failed to create temp file");
+
+  std::ofstream ofs(tmp_name, std::ios::binary);
+  ofs.write(content.data(), content.size());
+  ofs.close();
+  close(fd);
+
+  return std::string(tmp_name);
+}
 
 TEST(Engine, simpleCharMatch) {
   Re2Matcher matcher("abcdef");
   auto policy = std::make_unique<LockFreeSPSCPolicy>(matcher);
   Engine<LockFreeSPSCPolicy> engine(std::move(policy));
-  int pipefd[2];
-  pipe(pipefd);
 
   std::string input = "xxxxabcdexxxx";
+  std::string filePath = writeTempFile(input);
 
-  write(pipefd[1], input.data(), input.size());
-  close(pipefd[1]);
+  engine.setFilePath(filePath);
+  int result = engine.run();
+  EXPECT_EQ(result, 0);
 
-  dup2(pipefd[0], STDIN_FILENO);
-  engine.run();
+  std::remove(filePath.c_str());
 }
 
 TEST(Engine, EngineBoundary) {
@@ -32,16 +50,13 @@ TEST(Engine, EngineBoundary) {
   std::string chunk2(InputConfig::getChunkSize(), 'x');
   chunk2.replace(0, 2, "ef");
 
-  int pipefd[2];
-  pipe(pipefd);
-
   std::string input = chunk1 + chunk2;
-  write(pipefd[1], input.data(), input.size());
-  close(pipefd[1]);
+  std::string filePath = writeTempFile(input);
 
-  dup2(pipefd[0], STDIN_FILENO);
-
+  engine.setFilePath(filePath);
   auto result = engine.run();
   EXPECT_EQ(result, 1);
+
+  std::remove(filePath.c_str());
   InputConfig::resetChunkSize();
 }

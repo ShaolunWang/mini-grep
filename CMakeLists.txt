@@ -92,3 +92,4 @@ target_link_libraries(re2
 add_subdirectory(src)
 add_subdirectory(test)
 add_subdirectory(apps)
+add_subdirectory(benchmark)

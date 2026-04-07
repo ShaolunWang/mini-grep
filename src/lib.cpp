@@ -1,5 +1,6 @@
 #include "search/lib.h"
 #include "fmt/base.h"
+#include <fstream>
 #include <span>
 #include <string>
 template class Engine<SequentialPolicy>;
@@ -13,19 +14,18 @@ template <ExecutorPolicy Policy> void Engine<Policy>::read_io() {
   std::unique_ptr<char[]> tail_buffer{};
   size_t tail_size = 0;
 
-  while (true) {
+  std::ifstream file(m_filePath, std::ios::binary);
+  if (!file) {
+    fmt::println("Failed to open file: {}", m_filePath);
+    return;
+  }
+  while (file) {
     auto buffer = std::make_unique<char[]>(chunk_size);
-    const ssize_t n = ::read(STDIN_FILENO, buffer.get(), chunk_size);
-
-    if (n < 0) {
-      fmt::report_error("read failed");
+    file.read(buffer.get(), chunk_size);
+    auto read_size = static_cast<size_t>(file.gcount());
+    if (read_size == 0) {
       break;
     }
-
-    if (n == 0) {
-      break;
-    }
-    const auto read_size = static_cast<size_t>(n);
 
     // create new tail before we submit
     std::unique_ptr<char[]> new_tail;
