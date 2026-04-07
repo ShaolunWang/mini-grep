@@ -6,19 +6,14 @@
 
 static std::string writeTempFile(const std::string &content) {
 
-  srand(time(nullptr));
-  auto stamp = rand() % 1357;
-  std::string tmp_name = "/tmp/engine_test_" + std::to_string(stamp);
-  int fd = mkstemp(tmp_name.data());
-  if (fd < 0)
-    throw std::runtime_error("Failed to create temp file");
+  std::string filename =
+      "/tmp/engine_test_" + std::to_string(std::rand() % 1000000) + ".dat";
 
-  std::ofstream ofs(tmp_name, std::ios::binary);
+  std::ofstream ofs(filename, std::ios::binary);
   ofs.write(content.data(), content.size());
   ofs.close();
-  close(fd);
 
-  return std::string(tmp_name);
+  return std::string(filename);
 }
 
 TEST(Engine, simpleCharMatch) {
