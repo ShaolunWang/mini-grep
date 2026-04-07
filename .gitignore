@@ -49,3 +49,4 @@ CMakeUserPresets.json
 build*/
 .cache/
 compile_commands.json
+input.txt

@@ -14,11 +14,17 @@ public:
   bool push(const T &v)
     requires std::copyable<T>
   {
+    // tail is only modified by producer
+    // so we don't care about the ordering as long as it's own ordering
+    // is ensured
     const size_t currentTail = m_tail.load(std::memory_order_relaxed);
+
+    // head can be modified by the consumer, so load acquire is required
     if ((currentTail + 1) % m_capacity ==
         m_head.load(std::memory_order_acquire))
       return false;
     new (&m_container[currentTail].storage) T(v);
+    // storing so the next tail read is ok
     m_tail.store((currentTail + 1) % m_capacity, std::memory_order_release);
     return true;
   }

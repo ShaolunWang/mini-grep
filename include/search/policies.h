@@ -4,10 +4,8 @@
 #include "search/input.h"
 #include <atomic>
 #include <cstring>
-#include <stdatomic.h>
 #include <thread>
 #include <utility>
-#include <vector>
 
 struct Job {
 public:
@@ -136,7 +134,6 @@ private:
         std::this_thread::yield();
       }
     }
-
   };
   Re2Matcher &m_matcher;
   std::atomic<size_t> m_total{0};
