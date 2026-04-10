@@ -1,7 +1,7 @@
 #pragma once
+#include "input.h"
 #include "matcher.h"
-#include "ringbuffer/ringbuffer.h"
-#include "search/input.h"
+#include "ringbuffer/ringbuffer.hpp"
 #include <atomic>
 #include <cstring>
 #include <thread>
@@ -138,5 +138,5 @@ private:
   Re2Matcher &m_matcher;
   std::atomic<size_t> m_total{0};
   std::jthread m_consumer;
-  LockfreeSPSCRingBuffer<Job> m_queue;
+  RingBuffer<Job> m_queue;
 };

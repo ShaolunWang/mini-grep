@@ -28,15 +28,6 @@ if(CMAKE_BUILD_TYPE MATCHES Debug OR
 			re2
 			search_lib
 	)
-	add_executable(test_ringbuffer
-			test_ringbuffer.cpp
-	)
-	target_link_libraries(test_ringbuffer
-			GTest::gtest_main
-			fmt::fmt
-			re2
-			search_lib
-	)
 	add_executable(test_engine
 			test_engine.cpp
 	)
@@ -50,7 +41,6 @@ if(CMAKE_BUILD_TYPE MATCHES Debug OR
 	include(GoogleTest)
 	gtest_discover_tests(test_queue)
 	gtest_discover_tests(test_policies)
-	gtest_discover_tests(test_ringbuffer)
 	gtest_discover_tests(test_engine)
 endif()
 ##########################################################
