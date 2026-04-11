@@ -4,6 +4,7 @@
 #include "gtest/gtest.h"
 #include <cstdio>
 #include <fstream>
+static std::mutex sc_mtx;
 
 static std::string writeTempFile(const std::string &content) {
 
@@ -18,6 +19,8 @@ static std::string writeTempFile(const std::string &content) {
 }
 
 TEST(Engine, simpleCharMatch) {
+  std::scoped_lock<std::mutex> lock(sc_mtx);
+  InputConfig::resetChunkSize();
   Re2Matcher matcher("abcdef");
   auto policy = std::make_unique<LockFreeSPSCPolicy>(matcher);
   Engine<LockFreeSPSCPolicy> engine(std::move(policy));
@@ -33,6 +36,8 @@ TEST(Engine, simpleCharMatch) {
 }
 
 TEST(Engine, EngineBoundary) {
+  std::scoped_lock<std::mutex> lock(sc_mtx);
+  InputConfig::resetChunkSize();
   InputConfig::setChunkSize(16); // small chunk for testing
   InputConfig::init("abcdef");
 
@@ -57,6 +62,8 @@ TEST(Engine, EngineBoundary) {
   InputConfig::resetChunkSize();
 }
 TEST(Engine, LockedPolicyMatching) {
+  std::scoped_lock<std::mutex> lock(sc_mtx);
+  InputConfig::resetChunkSize();
   Re2Matcher matcher("abcdef");
   auto policy = std::make_unique<LockedPolicy>(matcher);
   Engine<LockedPolicy> engine(std::move(policy));
