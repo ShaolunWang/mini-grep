@@ -1,3 +1,4 @@
+#include "fmt/base.h"
 #include "search/lib.h"
 #include "search/policies.h"
 #include "gtest/gtest.h"
@@ -54,4 +55,18 @@ TEST(Engine, EngineBoundary) {
 
   std::remove(filePath.c_str());
   InputConfig::resetChunkSize();
+}
+TEST(Engine, LockedPolicyMatching) {
+  Re2Matcher matcher("abcdef");
+  auto policy = std::make_unique<LockedPolicy>(matcher);
+  Engine<LockedPolicy> engine(std::move(policy));
+
+  std::string input = "xxxxabcdefxxxx";
+  std::string filePath = writeTempFile(input);
+
+  engine.setFilePath(filePath);
+  int result = engine.run();
+  EXPECT_EQ(result, 1);
+
+  std::remove(filePath.c_str());
 }

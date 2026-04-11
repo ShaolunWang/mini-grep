@@ -1,6 +1,7 @@
 #pragma once
 #include "input.h"
 #include "matcher.h"
+#include "queue/queue.h"
 #include "ringbuffer/ringbuffer.hpp"
 #include <atomic>
 #include <cstring>
@@ -11,12 +12,24 @@ struct Job {
 public:
   Job(const Job &) = delete;
   Job &operator=(const Job &) = delete;
-  Job(Job &&job) noexcept : buffer{std::move(job.buffer)}, size{job.size} {};
-  Job &operator=(Job &&) noexcept = default;
+  Job(Job &&job) noexcept : buffer{std::move(job.buffer)}, size{job.size} {
+    job.size = 0;
+    job.stop = false;
+  };
+  Job &operator=(Job &&other) noexcept {
+    if (this != &other) {
+      buffer = std::move(other.buffer);
+      size = other.size;
+      other.size = 0;
+      this->stop = other.stop;
+    }
+    return *this;
+  }
   Job(std::unique_ptr<char[]> buffer, std::size_t size) noexcept
       : buffer(std::move(buffer)), size{size} {}
   std::unique_ptr<char[]> buffer;
   std::size_t size;
+  bool stop{false};
   static Job make_job(std::string_view text) {
     if (text.empty()) {
       auto buffer = std::make_unique<char[]>(1); // allocate at least 1 byte
@@ -82,19 +95,45 @@ private:
 
 struct LockedPolicy : public ExecutorPolicyBased<LockedPolicy> {
 public:
-  explicit LockedPolicy(Re2Matcher &m_matcher) : m_matcher(m_matcher) {}
-  void submit(Job &&job) {};
-  void finish() {};
-  std::size_t wait() { return m_total.load(std::memory_order_relaxed); }
+  explicit LockedPolicy(Re2Matcher &m_matcher)
+      : m_matcher(m_matcher), m_queue{InputConfig::getChunkSize()} {
+    m_consumer = std::jthread([this]() { consume(); });
+  }
+
+  void submit(Job &&job) { m_queue.emplace(std::move(job)); }
+
+  void finish() {}
+
+  std::size_t wait() {
+    m_queue.close();
+    m_consumer.join();
+    return m_total.load(std::memory_order_relaxed);
+  }
 
 private:
+  void consume() {
+    while (true) {
+      auto job = m_queue.pop();
+      if (!job)
+        break;
+
+      if (job->size == 0)
+        continue;
+
+      std::string_view chunk(job->buffer.get(), job->size);
+      m_total.fetch_add(m_matcher.match(chunk), std::memory_order_relaxed);
+    }
+  }
+
   Re2Matcher &m_matcher;
   std::atomic<size_t> m_total{0};
+  LockedQueue<Job> m_queue;
+  std::jthread m_consumer;
 };
+;
 
 struct LockFreeSPSCPolicy : public ExecutorPolicyBased<LockFreeSPSCPolicy> {
 public:
-  // NOTE: this is weeeird :)
   explicit LockFreeSPSCPolicy(Re2Matcher &matcher)
       : m_matcher(matcher), m_queue(InputConfig::getChunkSize()) {
     m_consumer =
