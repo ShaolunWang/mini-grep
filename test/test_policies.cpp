@@ -109,7 +109,6 @@ TEST(LockedPolicyTest, NoMatches) {
   Re2Matcher matcher("xyz");
   LockedPolicy policy(matcher);
   policy.submit(Job::make_job("abc abc abc"));
-  policy.finish();
   EXPECT_EQ(policy.wait(), 0);
 }
 
@@ -117,7 +116,6 @@ TEST(LockedPolicyTest, SingleJob) {
   Re2Matcher matcher("abc");
   LockedPolicy policy(matcher);
   policy.submit(Job::make_job("abc abc abc"));
-  policy.finish();
   EXPECT_EQ(policy.wait(), 3);
 }
 
@@ -127,7 +125,6 @@ TEST(LockedPolicyTest, MultipleJobs) {
   policy.submit(Job::make_job("abc abc"));
   policy.submit(Job::make_job("abc"));
   policy.submit(Job::make_job("no match here"));
-  policy.finish();
   EXPECT_EQ(policy.wait(), 3);
 }
 

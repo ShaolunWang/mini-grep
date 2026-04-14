@@ -13,20 +13,20 @@ if((CMAKE_BUILD_TYPE MATCHES Debug)
         VERBATIM
     )
 
-    add_executable(my_micro_benchmark
-        my_micro_benchmark.cpp
+    add_executable(end_to_end_benchmark
+        end_to_end_benchmark.cpp
     )
 
-    add_dependencies(my_micro_benchmark gen_input)
+    add_dependencies(end_to_end_benchmark gen_input)
 
-    target_link_libraries(my_micro_benchmark
+    target_link_libraries(end_to_end_benchmark
         fmt::fmt
         search_lib
         re2
         benchmark::benchmark
     )
 
-	target_compile_definitions(my_micro_benchmark PRIVATE
+	target_compile_definitions(end_to_end_benchmark PRIVATE
 		GEN_INPUT_FILE="${GEN_INPUT}"
 	)
 endif()

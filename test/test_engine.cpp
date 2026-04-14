@@ -61,7 +61,7 @@ TEST(Engine, EngineBoundary) {
   std::remove(filePath.c_str());
   InputConfig::resetChunkSize();
 }
-TEST(Engine, LockedPolicyMatching) {
+TEST(Engine, LockedPolicySimpleMatching) {
   std::scoped_lock<std::mutex> lock(sc_mtx);
   InputConfig::resetChunkSize();
   Re2Matcher matcher("abcdef");
@@ -76,4 +76,30 @@ TEST(Engine, LockedPolicyMatching) {
   EXPECT_EQ(result, 1);
 
   std::remove(filePath.c_str());
+}
+TEST(Engine, LockedPolicyBoundaryMatching) {
+  std::scoped_lock<std::mutex> lock(sc_mtx);
+  InputConfig::resetChunkSize();
+  InputConfig::setChunkSize(16); // small chunk for testing
+  InputConfig::init("abcdef");
+
+  Re2Matcher matcher("abcdef");
+  auto policy = std::make_unique<LockedPolicy>(matcher);
+  Engine<LockedPolicy> engine(std::move(policy));
+
+  std::string chunk1(InputConfig::getChunkSize(), 'x');
+  chunk1.replace(InputConfig::getChunkSize() - 4, 4, "abcd");
+
+  std::string chunk2(InputConfig::getChunkSize(), 'x');
+  chunk2.replace(0, 2, "ef");
+
+  std::string input = chunk1 + chunk2;
+  std::string filePath = writeTempFile(input);
+
+  engine.setFilePath(filePath);
+  auto result = engine.run();
+  EXPECT_EQ(result, 1);
+
+  std::remove(filePath.c_str());
+  InputConfig::resetChunkSize();
 }

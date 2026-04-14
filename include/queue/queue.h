@@ -26,9 +26,13 @@ public:
   LockedQueue(const LockedQueue &) = delete;
   LockedQueue &operator=(const LockedQueue &) = delete;
 
+  /**
+   * @brief close the queue
+   */
   void close() {
     std::lock_guard lock(m_mtx);
     m_closed = true;
+    // notify all to stop everything
     m_cv.notify_all();
   }
 
@@ -37,6 +41,8 @@ public:
 
     m_cv.wait(lock, [&] { return m_closed || (m_head - m_tail) < m_capacity; });
 
+    // this is to bail out everything
+    // after close is signaled
     if (m_closed)
       return false;
 
@@ -57,7 +63,8 @@ public:
 
     m_cv.wait(lock, [&] { return m_closed || m_head > m_tail; });
 
-    if (m_head == m_tail) {
+    // only time that things can be closed is when heads == tail
+    if (m_head == m_tail && m_closed) {
       return std::nullopt;
     }
 
@@ -84,7 +91,7 @@ private:
   }
 
   // launders the pointer
-  // so that we can propery work on that
+  // so that we can propery work on that object
   T *launder_ptr(size_t idx) const noexcept {
     return std::launder(reinterpret_cast<T *>(m_storage + (idx * sizeof(T))));
   }

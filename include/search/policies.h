@@ -1,4 +1,5 @@
 #pragma once
+#include "fmt/base.h"
 #include "input.h"
 #include "matcher.h"
 #include "queue/queue.h"
@@ -114,8 +115,9 @@ private:
   void consume() {
     while (true) {
       auto job = m_queue.pop();
-      if (!job)
+      if (!job) {
         break;
+      }
 
       if (job->size == 0)
         continue;

@@ -8,9 +8,9 @@ test_debug:
 	cd build_debug && GTEST_COLOR=1 ctest --output-on-failure --repeat until-fail:10 -j 10
 test_thread:
 	cd build_thread && GTEST_COLOR=1 ctest --output-on-failure --repeat until-fail:10 -j 1
-release: 
+conf_release: 
 	cmake -B build_release -D CMAKE_BUILD_TYPE=Release -G Ninja
-release_build:
+release:
 	cmake --build build_release
 conf_thread:
 	cmake -B build_thread -D CMAKE_BUILD_TYPE=THREAD -G Ninja

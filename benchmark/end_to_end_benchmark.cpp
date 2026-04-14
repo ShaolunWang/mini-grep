@@ -7,7 +7,7 @@
 
 template <typename Policy> static void BM_Engine_File(benchmark::State &state) {
 
-  const size_t chunk_size = state.range(1);
+  const size_t chunk_size = state.range(0);
 
   for (auto _ : state) {
     state.PauseTiming();
@@ -31,13 +31,13 @@ template <typename Policy> static void BM_Engine_File(benchmark::State &state) {
 
 #define REGISTER_POLICY(policy, name)                                          \
   BENCHMARK_TEMPLATE(BM_Engine_File, policy)                                   \
-      ->Args({16, 4096})                                                       \
-      ->Args({16, 65536})                                                      \
-      ->Args({64, 65536})                                                      \
-      ->Args({128, 65536})                                                     \
+      ->Args({4096})                                                           \
+      ->Args({65536})                                                          \
+      ->Args({65536})                                                          \
+      ->Args({65536})                                                          \
       ->Name(name)                                                             \
       ->MinTime(0.05)                                                          \
-      ->Iterations(1000);
+      ->Iterations(10000);
 
 REGISTER_POLICY(LockFreeSPSCPolicy, "SPSC")
 REGISTER_POLICY(LockedPolicy, "Mutex")
