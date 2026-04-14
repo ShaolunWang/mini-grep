@@ -14,9 +14,11 @@ public:
     producer.join();
     return m_policy->wait();
   };
+  void setFilePath(const std::string &s) { m_filePath = s; }
 
 private:
   void read_io();
 
   std::unique_ptr<Policy> m_policy;
+  std::string m_filePath;
 };

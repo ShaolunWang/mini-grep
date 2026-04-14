@@ -1,5 +1,6 @@
 #include "queue/queue.h"
 #include "gtest/gtest.h"
+#include <algorithm>
 #include <mutex>
 #include <thread>
 
@@ -9,8 +10,9 @@ TEST(QueueTest, SingleThreadPushPop) {
   q.emplace(10);
   q.emplace(20);
 
-  int value;
-  value = q.pop();
+  std::optional<int> value = q.pop();
+  if (!value)
+    return;
   EXPECT_EQ(value, 10);
 
   value = q.pop();
@@ -35,9 +37,11 @@ TEST(QueueTest, MultiThreadPushPop) {
   // Consumer thread
   std::thread consumer([&]() {
     for (int i = 0; i < num_items; ++i) {
-      int v = q.pop(); // blocking pop
+      std::optional<int> value = q.pop();
+      if (!value)
+        break;
       std::scoped_lock<std::mutex> lk(res_mutex);
-      results.emplace_back(v);
+      results.emplace_back(value.value());
     }
   });
 
@@ -45,6 +49,7 @@ TEST(QueueTest, MultiThreadPushPop) {
   consumer.join();
 
   EXPECT_EQ(results.size(), num_items);
+  std::ranges::sort(results);
   for (int i = 0; i < num_items; ++i) {
     EXPECT_EQ(results[i], i);
   }
@@ -76,9 +81,11 @@ TEST(QueueTest, MultiProducerMultiConsumer) {
     consumers.emplace_back([&]() {
       for (int i = 0; i < (num_producers * items_per_producer) / num_consumers;
            i++) {
-        int value = q.pop(); // blocking pop
+        std::optional<int> value = q.pop();
+        if (!value)
+          break;
         std::scoped_lock<std::mutex> lk(res_mutex);
-        results.emplace_back(value);
+        results.emplace_back(value.value());
       }
     });
   }

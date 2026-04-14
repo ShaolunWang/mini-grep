@@ -7,13 +7,13 @@ int main(int argc, char **argv) {
     fmt::println("Usage: {} <pattern>", argv[0]);
     return 1;
   }
-  const std::string pattern = argv[1];
-  Re2Matcher matcher(std::move(pattern));
-  auto policy = std::make_unique<LockFreeSPSCPolicy>(matcher);
-  //
-  Engine<LockFreeSPSCPolicy> engine(std::move(policy));
-  std::string chunk1(InputConfig::getChunkSize(), 'x');
 
+  const std::string pattern = argv[2];
+  Re2Matcher matcher(std::move(pattern));
+  auto policy = std::make_unique<LockedPolicy>(matcher);
+  Engine<LockedPolicy> engine(std::move(policy));
+
+  engine.setFilePath(argv[1]);
   auto x = engine.run();
   fmt::println("{}", x);
   return 0;
