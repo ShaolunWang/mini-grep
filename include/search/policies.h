@@ -13,15 +13,13 @@ struct Job {
 public:
   Job(const Job &) = delete;
   Job &operator=(const Job &) = delete;
-  Job(Job &&job) noexcept : buffer{std::move(job.buffer)}, size{job.size} {
-    job.size = 0;
-    job.stop = false;
-  };
+  Job(Job &&job) noexcept
+      : buffer{std::exchange(job.buffer, nullptr)},
+        size{std::exchange(job.size, 0)} {};
   Job &operator=(Job &&other) noexcept {
-    if (this != &other) {
-      buffer = std::move(other.buffer);
-      size = other.size;
-      other.size = 0;
+    if (this != &other) { // protect against self assignment
+      buffer = std::exchange(other.buffer, nullptr);
+      size = std::exchange(other.size, 0);
       this->stop = other.stop;
     }
     return *this;
@@ -31,10 +29,10 @@ public:
   std::unique_ptr<char[]> buffer;
   std::size_t size;
   bool stop{false};
+
   static Job make_job(std::string_view text) {
     if (text.empty()) {
-      auto buffer = std::make_unique<char[]>(1); // allocate at least 1 byte
-      return Job(std::move(buffer), 0);
+      return Job(nullptr, 0);
     }
     auto buffer = std::make_unique<char[]>(text.size());
     std::memcpy(buffer.get(), text.data(), text.size());
