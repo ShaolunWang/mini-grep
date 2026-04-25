@@ -1,6 +1,7 @@
 #pragma once
 #include "fmt/base.h"
 #include "input.h"
+#include "log.h"
 #include "matcher.h"
 #include "queue/queue.h"
 #include "ringbuffer/ringbuffer.hpp"
@@ -11,6 +12,7 @@
 
 struct Job {
 public:
+  // job shouldn't be copable
   Job(const Job &) = delete;
   Job &operator=(const Job &) = delete;
   Job(Job &&job) noexcept
@@ -119,8 +121,8 @@ private:
 
       if (job->size == 0)
         continue;
-
       std::string_view chunk(job->buffer.get(), job->size);
+      Logger::async_log->info(fmt::format("submitted chunk: {} ", chunk));
       m_total.fetch_add(m_matcher.match(chunk), std::memory_order_relaxed);
     }
   }
@@ -165,7 +167,9 @@ private:
       if (auto job = m_queue.pop()) {
         if (job->buffer == nullptr || job->size == 0)
           continue;
+
         std::string_view chunk(job->buffer.get(), job->size);
+        Logger::async_log->info(fmt::format("submitted chunk: {} ", chunk));
         m_total.fetch_add(m_matcher.match(chunk), std::memory_order_relaxed);
       } else if (stop.stop_requested() && m_queue.empty()) {
         break;

@@ -21,7 +21,7 @@ public:
   static size_t getChunkSize() { return m_chunkSize; }
 
   static void setChunkSize(size_t t) { m_chunkSize = t; }
-  static void resetChunkSize() { m_chunkSize = 256 * 1024; }
+  static void resetChunkSize() { m_chunkSize = 65536; }
   static const std::string &getPattern() { return m_pattern; }
 
 private:

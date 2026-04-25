@@ -53,7 +53,13 @@ FetchContent_Declare(
     GIT_TAG "2025-11-05"
 )
 
-FetchContent_MakeAvailable(fmtlib absl ringbuffer re2)
+FetchContent_Declare(
+	spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog
+	GIT_TAG "v1.17.0"
+)
+
+FetchContent_MakeAvailable(fmtlib absl ringbuffer re2 spdlog)
 
 # thanks re2 and abseil :)
 target_link_libraries(re2

@@ -50,3 +50,6 @@ build*/
 .cache/
 compile_commands.json
 input.txt
+
+bm_log
+logs/

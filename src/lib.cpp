@@ -1,5 +1,6 @@
 #include "search/lib.h"
 #include "fmt/base.h"
+#include "spdlog/spdlog.h"
 #include <fstream>
 #include <span>
 #include <string>
@@ -16,7 +17,7 @@ template <ExecutorPolicy Policy> void Engine<Policy>::read_io() {
 
   std::ifstream file(m_filePath, std::ios::binary);
   if (!file) {
-    fmt::println("Failed to open file: {}", m_filePath);
+    spdlog::error("Failed to open file: {}", m_filePath);
     return;
   }
   while (file) {

@@ -4,7 +4,7 @@ file(GLOB HEADER_LIST CONFIGURE_DEPENDS
 )
 
 add_library(search_lib matcher.cpp lib.cpp ${HEADER_LIST})
-target_link_libraries(search_lib PUBLIC fmt::fmt ringbuffer::ringbuffer re2)
+target_link_libraries(search_lib PUBLIC fmt::fmt ringbuffer::ringbuffer re2 spdlog)
 target_include_directories(search_lib PUBLIC ../include)
 
 target_compile_features(search_lib PUBLIC cxx_std_23)

@@ -1,8 +1,7 @@
 #include "fmt/format.h"
 #include "search/lib.h"
 #include "search/policies.h"
-int main(int argc, char **argv) {
-
+int main(int argc, char *argv[]) {
   if (argc < 2) {
     fmt::println("Usage: {} <pattern>", argv[0]);
     return 1;
