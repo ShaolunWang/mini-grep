@@ -11,8 +11,8 @@
 template <typename T> class LockedQueue {
 public:
   explicit LockedQueue(size_t capacity)
-      : m_capacity(capacity), m_storage(static_cast<std::byte *>(
-                                  ::operator new(sizeof(T) * capacity))) {}
+      : m_capacity(capacity),
+        m_storage(static_cast<T *>(malloc(sizeof(T) * capacity))) {}
 
   ~LockedQueue() {
     close();
@@ -47,7 +47,7 @@ public:
       return false;
 
     size_t idx = m_head % m_capacity;
-    T *place = launder_ptr(idx);
+    T *place = &m_storage[idx];
 
     new (place) T(std::forward<U>(v));
 
@@ -69,9 +69,9 @@ public:
     }
 
     size_t idx = m_tail % m_capacity;
-    T *place = launder_ptr(idx);
+    T *place = &m_storage[idx];
 
-    T out = std::move(*place);
+    std::optional<T> out = std::optional(std::move(*place));
     std::destroy_at(place);
 
     ++m_tail;
@@ -84,7 +84,7 @@ public:
 private:
   void destroy_front() {
     size_t idx = m_tail % m_capacity;
-    T *place = launder_ptr(idx);
+    T *place = &m_storage[idx];
 
     std::destroy_at(place);
     ++m_tail;
@@ -92,12 +92,9 @@ private:
 
   // launders the pointer
   // so that we can propery work on that object
-  T *launder_ptr(size_t idx) const noexcept {
-    return std::launder(reinterpret_cast<T *>(m_storage + (idx * sizeof(T))));
-  }
 
   size_t m_capacity;
-  std::byte *m_storage;
+  T *m_storage;
 
   size_t m_head{0};
   size_t m_tail{0};
