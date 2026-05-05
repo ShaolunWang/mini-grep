@@ -9,11 +9,11 @@ int main(int argc, char *argv[]) {
 
   const std::string pattern = argv[2];
   Re2Matcher matcher(std::move(pattern));
-  auto policy = std::make_unique<LockedPolicy>(matcher);
-  Engine<LockedPolicy> engine(std::move(policy));
+  auto policy = std::make_unique<LockFreeSPSCPolicy>(matcher);
+  Engine<LockFreeSPSCPolicy> engine(std::move(policy));
 
   engine.setFilePath(argv[1]);
-  auto x = engine.run();
+  auto x = engine.run_single_file();
   fmt::println("{}", x);
   return 0;
 }

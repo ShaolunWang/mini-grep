@@ -4,7 +4,6 @@
 #include <condition_variable>
 #include <cstddef>
 #include <mutex>
-#include <new>
 #include <optional>
 #include <utility>
 
@@ -20,7 +19,7 @@ public:
       destroy_front();
     }
 
-    ::operator delete(m_storage);
+    delete m_storage;
   }
 
   LockedQueue(const LockedQueue &) = delete;

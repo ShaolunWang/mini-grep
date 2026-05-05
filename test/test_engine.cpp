@@ -29,7 +29,7 @@ TEST(Engine, simpleCharMatch) {
   std::string filePath = writeTempFile(input);
 
   engine.setFilePath(filePath);
-  int result = engine.run();
+  int result = engine.run_single_file();
   EXPECT_EQ(result, 0);
 
   std::remove(filePath.c_str());
@@ -55,7 +55,7 @@ TEST(Engine, EngineBoundary) {
   std::string filePath = writeTempFile(input);
 
   engine.setFilePath(filePath);
-  auto result = engine.run();
+  auto result = engine.run_single_file();
   EXPECT_EQ(result, 1);
 
   std::remove(filePath.c_str());
@@ -72,7 +72,7 @@ TEST(Engine, LockedPolicySimpleMatching) {
   std::string filePath = writeTempFile(input);
 
   engine.setFilePath(filePath);
-  int result = engine.run();
+  int result = engine.run_single_file();
   EXPECT_EQ(result, 1);
 
   std::remove(filePath.c_str());
@@ -97,7 +97,7 @@ TEST(Engine, LockedPolicyBoundaryMatching) {
   std::string filePath = writeTempFile(input);
 
   engine.setFilePath(filePath);
-  auto result = engine.run();
+  auto result = engine.run_single_file();
   EXPECT_EQ(result, 1);
 
   std::remove(filePath.c_str());

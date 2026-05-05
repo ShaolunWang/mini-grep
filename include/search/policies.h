@@ -12,7 +12,7 @@
 
 struct Job {
 public:
-  // job shouldn't be copable
+  // job shouldn't be copyable
   Job(const Job &) = delete;
   Job &operator=(const Job &) = delete;
   Job(Job &&job) noexcept

@@ -13,4 +13,3 @@ public:
                                                      "logs/log");
   ;
 };
-

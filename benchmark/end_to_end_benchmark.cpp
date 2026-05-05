@@ -22,7 +22,7 @@ template <typename Policy> static void BM_Engine_File(benchmark::State &state) {
     engine.setFilePath(GEN_INPUT_FILE);
 
     state.ResumeTiming();
-    auto x = engine.run();
+    auto x = engine.run_single_file();
     benchmark::DoNotOptimize(x);
   }
 

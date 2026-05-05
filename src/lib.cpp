@@ -1,5 +1,4 @@
 #include "search/lib.h"
-#include "fmt/base.h"
 #include "spdlog/spdlog.h"
 #include <fstream>
 #include <span>
@@ -7,7 +6,7 @@
 template class Engine<SequentialPolicy>;
 template class Engine<LockedPolicy>;
 template class Engine<LockFreeSPSCPolicy>;
-template <ExecutorPolicy Policy> void Engine<Policy>::read_io() {
+template <ExecutorPolicy Policy> void Engine<Policy>::read_single_file() {
 
   const size_t chunk_size = InputConfig::getChunkSize();
   const size_t pattern_size = InputConfig::getPattern().size();
