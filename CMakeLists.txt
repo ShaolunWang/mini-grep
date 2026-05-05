@@ -27,7 +27,7 @@ if(CMAKE_BUILD_TYPE MATCHES THREAD)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(LibrarySetup)
+include(LibrarySetUp)
 add_subdirectory(src)
 add_subdirectory(apps)
 add_subdirectory(benchmark)
